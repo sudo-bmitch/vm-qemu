@@ -1,0 +1,28 @@
+#cloud-config
+users: [ ${user_list} ]
+
+chpasswd: 
+  list: |
+    ubuntu:${user_password}
+  #  root:root
+  expire: False
+ssh_pwauth: True
+
+#manage_resolv_conf: true
+#resolv_conf:
+#  nameservers: [ ${dns_list} ]
+#  searchdomains:
+#    - foo.example.com
+#    - bar.example.com
+#  domain: example.com
+#  options:
+#    rotate: true
+#    timeout: 1
+
+package_update: true
+packages:
+- python
+
+bootcmd:
+- ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+

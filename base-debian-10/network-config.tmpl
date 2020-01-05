@@ -1,0 +1,18 @@
+---
+version: 1
+config:
+- type: physical
+  name: enp1s0
+#  mac_address: INSTANCE_MAC_GOES_HERE
+  subnets:
+  - type: static
+    address: ${base_ip}.${end_ip}
+    netmask: 255.255.255.0
+    routes:
+    - network: 0.0.0.0
+      netmask: 0.0.0.0
+      gateway: ${base_ip}.1
+- type: nameserver
+  address: [ ${dns_list} ]
+  search: []
+

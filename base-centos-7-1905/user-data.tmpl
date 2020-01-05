@@ -1,0 +1,23 @@
+#cloud-config
+users: [ $user_list ]
+
+chpasswd: 
+  list: |
+    centos:$user_password
+  #  root:root
+  expire: False
+ssh_pwauth: True
+
+bootcmd:
+  # image contains dhcp to wrong interface, cleanup
+  - rm -f /etc/sysconfig/network-scripts/ifcfg-eth0
+  # in some scenarios, restarting interface was needed to apply network changes
+  #- ifdown ens2
+  #- ifup ens2
+  # cannot figure out where this IP is coming from, cloud-init dhcp maybe?
+  - sed -e 's/^nameserver 10.0.2.3/#nameserver 10.0.2.3/' -i /etc/resolv.conf
+  # fix slow ssh because of reverse DNS lookups
+  - sed -e 's/^GSSAPI/#GSSAPI/' -e '/UseDNS / s/.*/UseDNS no/' -i /etc/ssh/sshd_config
+  # hide syslogd to console (because of older kernel in KVM)
+  - sed -e 's/^\*\.emerg/# *.emerg/' -i /etc/rsyslog.conf
+

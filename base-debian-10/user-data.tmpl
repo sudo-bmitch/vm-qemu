@@ -1,0 +1,19 @@
+#cloud-config
+users: [ ${user_list} ]
+
+chpasswd: 
+  list: |
+    debian:${user_password}
+  #  root:root
+  expire: False
+ssh_pwauth: True
+
+package_update: true
+packages:
+- python
+
+bootcmd:
+# disable automatic dhcp
+- sed -e '/^#/! {/eth0/ s/^/# /}' -i /etc/network/interfaces
+
+

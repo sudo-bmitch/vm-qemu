@@ -1,0 +1,4 @@
+*.qcow2
+*.img
+*[.-]local.*
+local.env
