@@ -164,7 +164,7 @@ virt-install ${virt_inst_opts} \
   --machine q35 \
   --vcpus "${opt_c}" \
   --memory "${opt_m}" \
-  --network network="${opt_N}" \
+  --network network="${opt_N},address.type=pci,address.bus=00,address.slot=1" \
   ${virtinst_opts} \
   --noautoconsole
 
