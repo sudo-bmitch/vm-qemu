@@ -1,4 +1,7 @@
 #cloud-config
+hostname: ${name}
+manage_etc_hosts: true
+
 users: [ ${user_list} ]
 
 chpasswd: 
