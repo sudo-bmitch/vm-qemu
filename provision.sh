@@ -28,6 +28,7 @@ stamp=$(date +%Y%m%d-%H%M%S)
 opt_b="$base_default"
 opt_c=1
 opt_h=0
+opt_H=""
 opt_i=""
 opt_m="1024"
 opt_n=""
@@ -41,9 +42,10 @@ usage() {
   echo "  -b ${opt_b}: base image/seed data name (default ${opt_b})"
   echo "  -c ${opt_c}: number of virtual CPUs to attach (default ${opt_c})"
   echo "  -h: this help message"
+  echo "  -H name: Hostname (default to VM name)"
   echo "  -i 10: IP address (last octet) (required)"
   echo "  -m ${opt_m}: memory (default ${opt_m})"
-  echo "  -n name: Name of VM, used for hostname and VM name (required)"
+  echo "  -n name: Name of VM (required)"
   echo "  -N ${opt_N}: network (default ${opt_N})"
   echo "  -s ${opt_s}: disk space (default ${opt_s})"
   echo "  -S: disable shared directory"
@@ -54,15 +56,16 @@ usage() {
 proc_template() {
   file_in=$1
   file_out=$2
-  name="$opt_n" base_ip="$base_ip" end_ip="$opt_i" stamp="$stamp" \
-    envsubst '$name $base_ip $end_ip $dns_list $ssh_key_list $stamp $user_list $user_password' <$file_in >$file_out
+  name="$opt_n" hostname="${opt_H:-$opt_n}" base_ip="$base_ip" end_ip="$opt_i" stamp="$stamp" \
+    envsubst '$name $hostname $base_ip $end_ip $dns_list $ssh_key_list $stamp $user_list $user_password' <$file_in >$file_out
 }
 
-while getopts 'b:c:hi:m:n:N:s:S' option; do
+while getopts 'b:c:hH:i:m:n:N:s:S' option; do
   case $option in
     b) opt_b="$OPTARG";;
     c) opt_c="$OPTARG";;
     h) opt_h=1;;
+    H) opt_H="$OPTARG";;
     i) opt_i="$OPTARG";;
     m) opt_m="$OPTARG";;
     n) opt_n="$OPTARG";;
@@ -111,7 +114,7 @@ if [ -f "${vmdir}/${opt_n}/image.qcow2" ]; then
   echo "Warning: ${vmdir}/${opt_n}/image.qcow2 already exists" >&2
 else
   # create the OS image based off the base image
-  qemu-img create -f qcow2 -o "backing_file=../${base_pre}${opt_b}/${base_image}" "${vmdir}/${opt_n}/image.qcow2" "${opt_s}"
+  qemu-img create -f qcow2 -o "backing_file=../${base_pre}${opt_b}/${base_image},lazy_refcounts=on" "${vmdir}/${opt_n}/image.qcow2" "${opt_s}"
 fi
 
 # setup seed file
@@ -158,7 +161,7 @@ virt-install ${virt_inst_opts} \
   --graphics none \
   --import \
   --controller scsi,model=auto \
-  --disk path="${vmdir}/${opt_n}/image.qcow2",format=qcow2,bus=${virt_inst_bus:-virtio} \
+  --disk path="${vmdir}/${opt_n}/image.qcow2",format=qcow2,bus=${virt_inst_bus:-virtio},cache=${virt_inst_cache:-writeback} \
   --disk path="${vmdir}/${opt_n}/seed.img",device=cdrom,bus=${virt_inst_bus:-virtio} \
   --cpu host-model \
   --machine q35 \
