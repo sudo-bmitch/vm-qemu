@@ -114,7 +114,7 @@ if [ -f "${vmdir}/${opt_n}/image.qcow2" ]; then
   echo "Warning: ${vmdir}/${opt_n}/image.qcow2 already exists" >&2
 else
   # create the OS image based off the base image
-  qemu-img create -f qcow2 -o "backing_file=../${base_pre}${opt_b}/${base_image}" "${vmdir}/${opt_n}/image.qcow2" "${opt_s}"
+  qemu-img create -f qcow2 -o "backing_file=../${base_pre}${opt_b}/${base_image},lazy_refcounts=on" "${vmdir}/${opt_n}/image.qcow2" "${opt_s}"
 fi
 
 # setup seed file
@@ -161,7 +161,7 @@ virt-install ${virt_inst_opts} \
   --graphics none \
   --import \
   --controller scsi,model=auto \
-  --disk path="${vmdir}/${opt_n}/image.qcow2",format=qcow2,bus=${virt_inst_bus:-virtio} \
+  --disk path="${vmdir}/${opt_n}/image.qcow2",format=qcow2,bus=${virt_inst_bus:-virtio},cache=${virt_inst_cache:-writeback} \
   --disk path="${vmdir}/${opt_n}/seed.img",device=cdrom,bus=${virt_inst_bus:-virtio} \
   --cpu host-model \
   --machine q35 \
