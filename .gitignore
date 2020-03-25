@@ -2,3 +2,4 @@
 *.img
 *[.-]local.*
 local.env
+vm-*
