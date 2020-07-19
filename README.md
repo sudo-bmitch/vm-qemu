@@ -138,7 +138,7 @@ The following example is for a Debian 10 image:
   - User pass: debian (does not matter, replaced by cloud init later)
   - TZ: Eastern
   - Partition:
-    - 8MB boot, bootable
+    - 100 MB boot, bootable
     - Remainder /
   - Packages: ssh, standard system
   - Before shutdown, open a console:
@@ -150,7 +150,7 @@ The following example is for a Debian 10 image:
   ```
   virsh destroy base-debian-10-build
   virsh undefine base-debian-10-build
-  qemu-img snapshot -c base-os base-debian-10-build/setup.qcow2
+  sudo qemu-img snapshot -c base-os base-debian-10-build/setup.qcow2
   virt-install \
     --virt-type kvm \
     --name base-debian-10-build \
@@ -176,7 +176,8 @@ The following example is for a Debian 10 image:
   - `apt-get install cloud-init cloud-utils cloud-initramfs-growroot`
   - Verify entry in /etc/cloud/cloud.cfg the following to `default_user`:
     `sudo: ["ALL=(ALL) NOPASSWD:ALL"]`
-  - Include other packages you may want (curl, jq, python3, etc)
+  - Include other packages you may want (curl, git, jq, tmux, etc)
+    - `apt-get install curl git jq tmux unzip`
   - Is this needed? Clean IP's from /etc/network and /etc/resolve.conf
   - Is this needed? Cleanup:
     ```
@@ -197,6 +198,7 @@ The following example is for a Debian 10 image:
   - `virsh undefine base-debian-10-build`
 
 - Compact/copy, and use as new base image
+  - Remove Snapshot: `sudo qemu-img snapshot -d base-os base-debian-10-build/setup.qcow2`
   - Compact: `sudo qemu-img convert -f qcow2 -O qcow2 base-debian-10-build/setup.qcow2 base-debian-10/base.qcow2`
 
 ## Templates and Other Base Image Files
@@ -216,7 +218,7 @@ The base image should be named base.qcow2. In the same directory, you need:
   ```
   instance-id: iid-${name}-${stamp}
   hostname: ${name}
-  local-hostname: ${name}
+  local-hostname: ${hostname}
   ```
 
 - network-config.tmpl: used with cloud-init:
@@ -226,7 +228,7 @@ The base image should be named base.qcow2. In the same directory, you need:
   config:
   - type: physical
     # physical interface name varies, use `virsh console` to login and check `ip a`
-    name: enp4s0
+    name: enp0s1
     # mac_address: INSTANCE_MAC_GOES_HERE
     subnets:
     - type: static
@@ -256,7 +258,7 @@ The base image should be named base.qcow2. In the same directory, you need:
   package_update: true
   # install packages that may be missing from upstream base image
   packages:
-  - python3
+  # - python3
   
   bootcmd:
   # disable automatic dhcp
